@@ -1,0 +1,87 @@
+AUTHORS: John Little (jlittl04) and Aryan Pandey (apande04)
+DATE: November 20th, 2019
+PROGRAM: The Universal Machine
+FILE: README
+
+--------------------------------------------------------------------------------
+
+ACKNOWLEDGEMENTS: none
+
+IMPLEMENTATION COMPLETENESS: 
+  we believe that this implementation is entirely complete. We are not aware
+  of any standing bugs or malfunctions.
+
+DEPARTURE FROM DESIGN:
+  we had no significant departures from design.
+
+ARCHITECTURE:
+  Memory Module (memory.h):
+    memory is organized as a Seq_T of segments. segments are just Hanson Seq_T
+    structures of words making the whole memory pool essentially a 2D Seq_T.
+    this design allowed for strong modularity and hiding of secrets but
+    significantly harmed our performance due to Hanson's many layers of function
+    calls. the memory module contains multiple management functions. These
+    functions serve to allocate and deallocate memory safely and away from the
+    main UM interface. This means that the UM actually has no direct control 
+    over how memory is allocated and deallocated -- it just asks for it.
+
+  Instruction Module (instructions.h):
+    the UM asks for memory to be allocated (as well as 12 other operations)
+    through the instructions module. the instructions module is responsible for 
+    disassembling UM instructions and executing each of the 13 operations that
+    this machine can complete. To this goal, the instructions module contains 
+    functions to unpack register identifiers and the opcode from um instructions
+    and to execute the specifc operation based on the values unpacked from the 
+    instruction. 
+
+  Universal Machine (um.c):
+    the Universal Machine is built inside um.c as a module that relies on the 
+    instructions and memory module. It contains the actual declarations of the 
+    memory pool sequence (which it subsequently passes to the memory functions).
+    It also is responsible for reading in and retrieving the instructions that 
+    the instruction functions unpack and execute. It also contains the registers
+    array representation. The UM module is the "glue" that combines all of our 
+    components into an operational virtual machine.
+
+TIME TO EXECUTE 50 MILLION INSTRUCTIONS:
+  8 seconds
+
+UNIT TESTS:
+  add.um: test the add operation. add contents, output result, should be "<".
+  bitwise-nand.um: test bitwise NAND. load two values, NAND twice, output
+                   result, should be "R".
+  con-move.um: load a condition, load value, call conditional move, output.
+               expect output to be "4".
+  division.um: load two values, divide, output. expect output to be "<".
+  halt.um: halt the machine. No expected output. Just make sure program dies.
+  halt-verbose.um: halt the machine. If the machine doesn't halt, output will
+                   be "Bad!\n". Otherwise, no output is good.
+  input.um: input "j" into register, output contents of that register, expect
+                  output to be "j".
+  load_program_test.um: considers the case when only the program counter is 
+                        changed with segment 0 left intact and when an entirely 
+                        new segment is loaded in to replace segment 0. the
+                        program should run the new code which outputs "ad". 
+  load-value.um: load value in a register, output the contents of that register.
+                 expect output to be "6".
+  multiply.um: load two values, execute multiply command, output. Expect output
+               to be "6".
+  output.um: load value into register, output that register. repeat 5 times. 
+             expect output to be "JOHN\n".
+  print-six.um: load value into register, output contents. expect ouput "6".
+  map_segment_test.um: map segment to create a memory block with 3 spaces. 
+                       prints out segment ID (should be 1) assigned and all 
+                       the elements to ensure they are all 0. expect output to
+                       be 0100 0000 in hex. These are unreadable characters.
+  unmap_segment_test.um: maps a new segment, unmaps it and tries to map a new 
+                         segment again. if UM is correctly built, the segID 
+                         of the unmapped segment will be put back into the pool 
+                         of available IDs and the latest map will reuse the 
+                         segID. segID is printed and should be equal to 1.
+                         expect the output to be 1 (NOT a readable char). 
+
+
+TIME TO COMPLETE:
+  analysis: 2
+  design: 4
+  implementation: 20 
